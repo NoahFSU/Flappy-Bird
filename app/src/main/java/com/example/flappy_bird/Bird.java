@@ -14,7 +14,6 @@ public class Bird {
     private int gravity = 3;
     private int lift = -30;
     private int velocity = 0;
-    private int screenHeight;
 
     public Bird(Context context, int screenWidth, int screenHeight) {
         birdBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.grumpy);
@@ -22,7 +21,6 @@ public class Bird {
         height = birdBitmap.getHeight();
         x = screenWidth / 2 - width / 2;
         y = screenHeight / 2 - height / 2;
-        this.screenHeight = screenHeight;
     }
 
     public void update() {
@@ -30,10 +28,6 @@ public class Bird {
         y += velocity;
         if (y < 0) {
             y = 0;
-            velocity = 0;
-        }
-        if (y + height > screenHeight) {
-            y = screenHeight - height;
             velocity = 0;
         }
     }

@@ -96,11 +96,12 @@ public class GameView extends SurfaceView implements Runnable {
     @Override
     public boolean onTouchEvent(android.view.MotionEvent event) {
         if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
-            if (isGameOver) {
-                restart();
-            } else {
+//            if (isGameOver) {
+//                restart();
+ //           }
+    //    else {
                 bird.flap();
-            }
+    //        }
             return true;
         }
         return super.onTouchEvent(event);
