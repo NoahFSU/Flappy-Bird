@@ -17,8 +17,16 @@ import android.graphics.Rect;
 
         public Pipe(Context context, int screenWidth, int screenHeight, boolean isTopPipe, int gapPosition) {
             this.isTopPipe = isTopPipe;
-            topPipeBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pipes);
-            bottomPipeBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pipesdown);
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inScaled = false;
+            topPipeBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pipes, options);
+            bottomPipeBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pipesdown, options);
+
+            // Check if bitmaps are loaded properly
+            if (topPipeBitmap == null || bottomPipeBitmap == null) {
+                throw new RuntimeException("Pipe bitmaps could not be loaded.");
+            }
+
             width = topPipeBitmap.getWidth(); // Assuming both images have the same width
             height = topPipeBitmap.getHeight(); // Assuming both images have the same height
             x = screenWidth;
@@ -36,7 +44,7 @@ import android.graphics.Rect;
 
         public void draw(Canvas canvas) {
             if (isTopPipe) {
-                canvas.drawBitmap(topPipeBitmap, x, y, null);
+                canvas.drawBitmap(topPipeBitmap, x - 50, y, null);
             } else {
                 canvas.drawBitmap(bottomPipeBitmap, x, y, null);
             }

@@ -12,7 +12,7 @@ public class Bird {
     private Bitmap birdBitmap;
     private int x, y, width, height;
     private int gravity = 3;
-    private int lift = -30;
+    private int lift = -50;
     private int velocity = 0;
 
     public Bird(Context context, int screenWidth, int screenHeight) {

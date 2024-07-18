@@ -48,25 +48,34 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void update() {
-        bird.update();
-        for (Pipe pipe : pipesl) {
-            pipe.update();
-            if (Rect.intersects(bird.getRect(), pipe.getRect())) {
-                isGameOver = true;
+        try {
+            bird.update();
+            for (Pipe pipe : pipesl) {
+                pipe.update();
+                if (Rect.intersects(bird.getRect(), pipe.getRect())) {
+                    isGameOver = true;
+                }
             }
+            managePipes();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        managePipes();
     }
+
 
     private void draw() {
         if (getHolder().getSurface().isValid()) {
-            Canvas canvas = getHolder().lockCanvas();
-            canvas.drawBitmap(background, 0, 0, paint);
-            bird.draw(canvas);
-            for (Pipe pipe : pipesl) {
-                pipe.draw(canvas);
+            try {
+                Canvas canvas = getHolder().lockCanvas();
+                canvas.drawBitmap(background, 0, 0, paint);
+                bird.draw(canvas);
+                for (Pipe pipe : pipesl) {
+                    pipe.draw(canvas);
+                }
+                getHolder().unlockCanvasAndPost(canvas);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            getHolder().unlockCanvasAndPost(canvas);
         }
     }
 
