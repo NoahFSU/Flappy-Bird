@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import java.util.ArrayList;
@@ -21,12 +22,10 @@ public class GameView extends SurfaceView implements Runnable {
     private Paint paint;
     private int screenWidth, screenHeight;
     private Bird bird;
-    private List<Pipe> pipesl = new ArrayList<>();
-    private boolean isGameOver = false;
+    private List<Pipe> pipesL = new ArrayList<>();
     private Random random = new Random();
     private Bitmap background;
     private static final int PIPE_GAP = 400;
-
     public GameView(Context context, int screenWidth, int screenHeight) {
         super(context);
         this.screenWidth = screenWidth;
@@ -50,10 +49,11 @@ public class GameView extends SurfaceView implements Runnable {
     private void update() {
         try {
             bird.update();
-            for (Pipe pipe : pipesl) {
+            for (Pipe pipe : pipesL) {
                 pipe.update();
                 if (Rect.intersects(bird.getRect(), pipe.getRect())) {
-                    isGameOver = true;
+                    Log.d("Collision", "Collision detected between bird: " + bird.getRect().toString() + " and pipe: " + pipe.getRect().toString());
+                    //restart();
                 }
             }
             managePipes();
@@ -69,7 +69,7 @@ public class GameView extends SurfaceView implements Runnable {
                 Canvas canvas = getHolder().lockCanvas();
                 canvas.drawBitmap(background, 0, 0, paint);
                 bird.draw(canvas);
-                for (Pipe pipe : pipesl) {
+                for (Pipe pipe : pipesL) {
                     pipe.draw(canvas);
                 }
                 getHolder().unlockCanvasAndPost(canvas);
@@ -105,12 +105,7 @@ public class GameView extends SurfaceView implements Runnable {
     @Override
     public boolean onTouchEvent(android.view.MotionEvent event) {
         if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
-//            if (isGameOver) {
-//                restart();
- //           }
-    //    else {
-                bird.flap();
-    //        }
+            bird.flap();
             return true;
         }
         return super.onTouchEvent(event);
@@ -123,18 +118,17 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void restart() {
-        isGameOver = false;
         bird = new Bird(getContext(), screenWidth, screenHeight);
-        pipesl.clear();
+        pipesL.clear();
         addPipePair();
     }
 
     private void managePipes() {
-        if (!pipesl.isEmpty() && pipesl.get(pipesl.size() - 1).getX() < screenWidth / 2) {
+        if (!pipesL.isEmpty() && pipesL.get(pipesL.size() - 1).getX() < screenWidth / 3) {
             addPipePair();
         }
 
-        Iterator<Pipe> iterator = pipesl.iterator();
+        Iterator<Pipe> iterator = pipesL.iterator();
         while (iterator.hasNext()) {
             Pipe pipe = iterator.next();
             if (pipe.getX() + pipe.getWidth() < 0) {
@@ -144,8 +138,8 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void addPipePair() {
-        int gapPosition = random.nextInt(screenHeight - PIPE_GAP) + PIPE_GAP / 2;
-        pipesl.add(new Pipe(getContext(), screenWidth, screenHeight, true, gapPosition));
-        pipesl.add(new Pipe(getContext(), screenWidth, screenHeight, false, gapPosition));
+        int gapPosition = random.nextInt(screenHeight - PIPE_GAP) + PIPE_GAP / 4;
+        pipesL.add(new Pipe(getContext(), screenWidth, screenHeight, true, gapPosition));
+        pipesL.add(new Pipe(getContext(), screenWidth, screenHeight, false, gapPosition));
     }
 }
