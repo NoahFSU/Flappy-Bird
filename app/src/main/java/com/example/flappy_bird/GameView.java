@@ -25,7 +25,7 @@ public class GameView extends SurfaceView implements Runnable {
     private List<Pipe> pipesL = new ArrayList<>();
     private Random random = new Random();
     private Bitmap background;
-    private static final int PIPE_GAP = 100;
+    private static final int PIPE_GAP = 800;
     private int score = 0;
 
 
@@ -82,12 +82,12 @@ public class GameView extends SurfaceView implements Runnable {
                 for (Pipe pipe : pipesL) {
                     pipe.draw(canvas);
                 }
-                paint.setColor(Color.RED);
-                canvas.drawRect(bird.getRect(), paint);
-                paint.setColor(Color.GREEN);
-                for (Pipe pipe : pipesL) {
-                    canvas.drawRect(pipe.getRect(), paint);
-                }
+                //paint.setColor(Color.RED);
+                //canvas.drawRect(bird.getRect(), paint);
+                //paint.setColor(Color.GREEN);
+                //for (Pipe pipe : pipesL) {
+                //    canvas.drawRect(pipe.getRect(), paint);
+                //}
 
                 paint.setColor(Color.BLACK);
                 paint.setTextSize(500);

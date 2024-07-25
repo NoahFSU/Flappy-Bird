@@ -16,7 +16,7 @@ public class Pipe {
     private int velocity = 10;
     public boolean isTopPipe;
     private Rect rect;
-    private static final int GAP_HEIGHT = 100;
+    private static final int GAP_HEIGHT = 800;
 
     public Pipe(Context context, int screenWidth, int screenHeight, boolean isTopPipe, int gapPosition) {
         this.isTopPipe = isTopPipe;
@@ -26,8 +26,8 @@ public class Pipe {
         options.inScaled = false;
 
         // Load the pipe images
-        Bitmap originalTopPipeBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pipes, options);
-        Bitmap originalBottomPipeBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pipesdown, options);
+        Bitmap originalTopPipeBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pipes2, options);
+        Bitmap originalBottomPipeBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pipesdown2, options);
 
         if (originalTopPipeBitmap == null || originalBottomPipeBitmap == null) {
             throw new RuntimeException("Pipe bitmaps could not be loaded.");
@@ -65,7 +65,7 @@ public class Pipe {
 
         public void draw(Canvas canvas) {
             if (isTopPipe) {
-                canvas.drawBitmap(topPipeBitmap, x - 50, y, null);
+                canvas.drawBitmap(topPipeBitmap, x - 35, y, null);
             } else {
                 canvas.drawBitmap(bottomPipeBitmap, x, y, null);
             }
