@@ -25,7 +25,10 @@ public class GameView extends SurfaceView implements Runnable {
     private List<Pipe> pipesL = new ArrayList<>();
     private Random random = new Random();
     private Bitmap background;
-    private static final int PIPE_GAP = 400;
+    private static final int PIPE_GAP = 100;
+    private int score = 0;
+
+
     public GameView(Context context, int screenWidth, int screenHeight) {
         super(context);
         this.screenWidth = screenWidth;
@@ -53,9 +56,16 @@ public class GameView extends SurfaceView implements Runnable {
                 pipe.update();
                 if (Rect.intersects(bird.getRect(), pipe.getRect())) {
                     Log.d("Collision", "Collision detected between bird: " + bird.getRect().toString() + " and pipe: " + pipe.getRect().toString());
-                    //restart();
+                    restart();
+                    return;
                 }
             }
+            if (bird.getY() > screenHeight) {
+                Log.d("Game", "Bird went below the screen. Restarting...");
+                restart();
+                return;
+            }
+
             managePipes();
         } catch (Exception e) {
             e.printStackTrace();
@@ -72,6 +82,19 @@ public class GameView extends SurfaceView implements Runnable {
                 for (Pipe pipe : pipesL) {
                     pipe.draw(canvas);
                 }
+                paint.setColor(Color.RED);
+                canvas.drawRect(bird.getRect(), paint);
+                paint.setColor(Color.GREEN);
+                for (Pipe pipe : pipesL) {
+                    canvas.drawRect(pipe.getRect(), paint);
+                }
+
+                paint.setColor(Color.BLACK);
+                paint.setTextSize(500);
+                paint.setFakeBoldText(true);
+                paint.setTextAlign(Paint.Align.CENTER);
+                canvas.drawText(String.valueOf(score), screenWidth / 2, 600, paint);
+
                 getHolder().unlockCanvasAndPost(canvas);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -121,10 +144,11 @@ public class GameView extends SurfaceView implements Runnable {
         bird = new Bird(getContext(), screenWidth, screenHeight);
         pipesL.clear();
         addPipePair();
+        score = 0;
     }
 
     private void managePipes() {
-        if (!pipesL.isEmpty() && pipesL.get(pipesL.size() - 1).getX() < screenWidth / 3) {
+        if (!pipesL.isEmpty() && pipesL.get(pipesL.size() - 1).getX() < screenWidth / 4) {
             addPipePair();
         }
 
@@ -133,13 +157,31 @@ public class GameView extends SurfaceView implements Runnable {
             Pipe pipe = iterator.next();
             if (pipe.getX() + pipe.getWidth() < 0) {
                 iterator.remove();
+                if (pipe.isTopPipe) {
+                    score++;
+                }
             }
         }
     }
 
     private void addPipePair() {
-        int gapPosition = random.nextInt(screenHeight - PIPE_GAP) + PIPE_GAP / 4;
+        // Assuming both pipes (top and bottom) have the same height
+        int pipeHeight = pipesL.isEmpty() ? 500 : pipesL.get(0).getHeight(); // Replace 500 with actual pipe height or use a placeholder
+        int screenHeightPadding = 100; // Optional padding from the top and bottom of the screen
+
+        // Calculate minimum and maximum Y positions for the top of the gap
+        int minGapPosition = screenHeightPadding + pipeHeight / 2;
+        int maxGapPosition = screenHeight - screenHeightPadding - (PIPE_GAP + pipeHeight / 2);
+
+        if (maxGapPosition <= minGapPosition) {
+            maxGapPosition = minGapPosition + 1; // Ensure a valid range
+        }
+
+        // Randomly determine the Y position for the top of the gap within the calculated range
+        int gapPosition = random.nextInt(maxGapPosition - minGapPosition + 1) + minGapPosition;
+
+        // Add top and bottom pipes
         pipesL.add(new Pipe(getContext(), screenWidth, screenHeight, true, gapPosition));
-        pipesL.add(new Pipe(getContext(), screenWidth, screenHeight, false, gapPosition));
+        pipesL.add(new Pipe(getContext(), screenWidth, screenHeight, false, gapPosition + PIPE_GAP));
     }
 }

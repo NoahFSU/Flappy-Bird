@@ -37,10 +37,16 @@ public class Bird {
     }
 
     public Rect getRect() {
-        return new Rect(x, y, x + width, y + height);
+        int Hpadding = 150;
+        int Wpadding = 300;
+        return new Rect(x + Wpadding, y + Hpadding, x + width - Wpadding, y + height - Hpadding);
     }
 
     public void flap() {
         velocity = lift;
+    }
+
+    public int getY() {
+        return y;
     }
 }
