@@ -239,7 +239,7 @@ public class GameView extends SurfaceView implements Runnable {
         int maxGapPosition = screenHeight - screenHeightPadding - (PIPE_GAP + pipeHeight / 2);
 
         if (maxGapPosition <= minGapPosition) {
-            maxGapPosition = minGapPosition + 1; // Ensure a valid range
+            maxGapPosition = minGapPosition + 1;
         }
 
 
