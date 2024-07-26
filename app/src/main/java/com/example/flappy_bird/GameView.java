@@ -19,31 +19,56 @@ public class GameView extends SurfaceView implements Runnable {
 
     private Thread thread;
     private boolean isPlaying;
+    private boolean isPaused = true;
     private Paint paint;
     private int screenWidth, screenHeight;
     private Bird bird;
     private List<Pipe> pipesL = new ArrayList<>();
     private Random random = new Random();
     private Bitmap background;
+    private Bitmap ployImage;
+    private float backgroundOffset = 0;
+    private float backgroundSpeed = 10;
     private static final int PIPE_GAP = 800;
     private int score = 0;
-
+    private Paint collisionPaint;
 
     public GameView(Context context, int screenWidth, int screenHeight) {
         super(context);
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         paint = new Paint();
+        collisionPaint = new Paint();
+        collisionPaint.setColor(Color.RED);
+        collisionPaint.setStyle(Paint.Style.STROKE);
+        collisionPaint.setStrokeWidth(5);
         bird = new Bird(context, screenWidth, screenHeight);
         addPipePair();
+
+
         background = BitmapFactory.decodeResource(context.getResources(), R.drawable.background);
         background = Bitmap.createScaledBitmap(background, screenWidth, screenHeight, false);
+
+
+        ployImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.ploy);
+
+        int ployImageWidth = ployImage.getWidth();
+        int ployImageHeight = ployImage.getHeight();
+        float aspectRatio = (float) ployImageWidth / ployImageHeight;
+        int scaledHeight = Math.round(screenWidth / aspectRatio);
+        if (scaledHeight > screenHeight) {
+            scaledHeight = screenHeight;
+            screenWidth = Math.round(scaledHeight * aspectRatio);
+        }
+        ployImage = Bitmap.createScaledBitmap(ployImage, screenWidth / 3, scaledHeight / 3, false);
     }
 
     @Override
     public void run() {
         while (isPlaying) {
-            update();
+            if (!isPaused) {
+                update();
+            }
             draw();
             sleep();
         }
@@ -67,33 +92,64 @@ public class GameView extends SurfaceView implements Runnable {
             }
 
             managePipes();
+            updateBackground();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    private void updateBackground() {
+        backgroundOffset -= backgroundSpeed;
+        if (backgroundOffset <= -screenWidth) {
+            backgroundOffset = 0;
+        }
+    }
 
     private void draw() {
         if (getHolder().getSurface().isValid()) {
             try {
                 Canvas canvas = getHolder().lockCanvas();
-                canvas.drawBitmap(background, 0, 0, paint);
+
+
+                canvas.drawBitmap(background, backgroundOffset, 0, paint);
+                if (backgroundOffset < 0) {
+                    canvas.drawBitmap(background, backgroundOffset + screenWidth, 0, paint);
+                }
+
+
                 bird.draw(canvas);
                 for (Pipe pipe : pipesL) {
                     pipe.draw(canvas);
                 }
-                //paint.setColor(Color.RED);
-                //canvas.drawRect(bird.getRect(), paint);
-                //paint.setColor(Color.GREEN);
-                //for (Pipe pipe : pipesL) {
-                //    canvas.drawRect(pipe.getRect(), paint);
-                //}
+
+                // Uncomment the following lines to draw collision boxes
+                // canvas.drawRect(bird.getRect(), collisionPaint); // Draw bird's collision box
+                // for (Pipe pipe : pipesL) {
+                //     canvas.drawRect(pipe.getRect(), collisionPaint); // Draw pipe's collision box
+                // }
 
                 paint.setColor(Color.BLACK);
                 paint.setTextSize(500);
                 paint.setFakeBoldText(true);
                 paint.setTextAlign(Paint.Align.CENTER);
                 canvas.drawText(String.valueOf(score), screenWidth / 2, 600, paint);
+
+
+                if (isPaused) {
+
+                    int ployImageWidth = ployImage.getWidth();
+                    int ployImageHeight = ployImage.getHeight();
+                    int left = (screenWidth - ployImageWidth) / 2;
+                    int top = (screenHeight - ployImageHeight) - 400;
+                    canvas.drawBitmap(ployImage, left, top, paint);
+
+
+                    paint.setColor(Color.BLACK);
+                    paint.setTextSize(200);
+                    paint.setFakeBoldText(true);
+                    paint.setTextAlign(Paint.Align.CENTER);
+                    canvas.drawText("Press to Play", screenWidth / 2, top + ployImageHeight + 150, paint); // Adjust the y-position as needed
+                }
 
                 getHolder().unlockCanvasAndPost(canvas);
             } catch (Exception e) {
@@ -104,7 +160,7 @@ public class GameView extends SurfaceView implements Runnable {
 
     private void sleep() {
         try {
-            Thread.sleep(17); // Approximately 60 FPS
+            Thread.sleep(17);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -112,6 +168,7 @@ public class GameView extends SurfaceView implements Runnable {
 
     public void resume() {
         isPlaying = true;
+        isPaused = true;
         thread = new Thread(this);
         thread.start();
     }
@@ -128,7 +185,11 @@ public class GameView extends SurfaceView implements Runnable {
     @Override
     public boolean onTouchEvent(android.view.MotionEvent event) {
         if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
-            bird.flap();
+            if (isPaused) {
+                isPaused = false;
+            } else {
+                bird.flap();
+            }
             return true;
         }
         return super.onTouchEvent(event);
@@ -145,6 +206,7 @@ public class GameView extends SurfaceView implements Runnable {
         pipesL.clear();
         addPipePair();
         score = 0;
+        isPaused = true;
     }
 
     private void managePipes() {
@@ -157,19 +219,22 @@ public class GameView extends SurfaceView implements Runnable {
             Pipe pipe = iterator.next();
             if (pipe.getX() + pipe.getWidth() < 0) {
                 iterator.remove();
-                if (pipe.isTopPipe) {
+            } else {
+
+                if (pipe.getX() + pipe.getWidth() < bird.getX() && !pipe.isScored() && pipe.isTopPipe) {
                     score++;
+                    pipe.setScored(true);
                 }
             }
         }
     }
 
     private void addPipePair() {
-        // Assuming both pipes (top and bottom) have the same height
-        int pipeHeight = pipesL.isEmpty() ? 500 : pipesL.get(0).getHeight(); // Replace 500 with actual pipe height or use a placeholder
-        int screenHeightPadding = 100; // Optional padding from the top and bottom of the screen
 
-        // Calculate minimum and maximum Y positions for the top of the gap
+        int pipeHeight = pipesL.isEmpty() ? 500 : pipesL.get(0).getHeight();
+        int screenHeightPadding = 100;
+
+
         int minGapPosition = screenHeightPadding + pipeHeight / 2;
         int maxGapPosition = screenHeight - screenHeightPadding - (PIPE_GAP + pipeHeight / 2);
 
@@ -177,10 +242,10 @@ public class GameView extends SurfaceView implements Runnable {
             maxGapPosition = minGapPosition + 1; // Ensure a valid range
         }
 
-        // Randomly determine the Y position for the top of the gap within the calculated range
+
         int gapPosition = random.nextInt(maxGapPosition - minGapPosition + 1) + minGapPosition;
 
-        // Add top and bottom pipes
+
         pipesL.add(new Pipe(getContext(), screenWidth, screenHeight, true, gapPosition));
         pipesL.add(new Pipe(getContext(), screenWidth, screenHeight, false, gapPosition + PIPE_GAP));
     }

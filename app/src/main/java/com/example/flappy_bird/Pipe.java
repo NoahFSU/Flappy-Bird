@@ -17,6 +17,9 @@ public class Pipe {
     public boolean isTopPipe;
     private Rect rect;
     private static final int GAP_HEIGHT = 800;
+    private boolean scored = false;
+
+
 
     public Pipe(Context context, int screenWidth, int screenHeight, boolean isTopPipe, int gapPosition) {
         this.isTopPipe = isTopPipe;
@@ -57,7 +60,7 @@ public class Pipe {
 
     private void updateRect() {
         if (isTopPipe) {
-            rect = new Rect(x, 0, x + width, topPipeBitmap.getHeight());
+            rect = new Rect(x - 35, 0, x + width - 35, topPipeBitmap.getHeight());
         } else {
             rect = new Rect(x, y, x + width, y + bottomPipeBitmap.getHeight());
         }
@@ -86,4 +89,13 @@ public class Pipe {
         public int getHeight() {
             return height;
         }
+
+    public boolean isScored() {
+        return scored;
     }
+
+    public void setScored(boolean scored) {
+        this.scored = scored;
+    }
+
+}

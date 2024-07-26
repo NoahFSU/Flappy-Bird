@@ -49,4 +49,7 @@ public class Bird {
     public int getY() {
         return y;
     }
+    public int getX() {
+        return x;
+    }
 }
